@@ -1,0 +1,14 @@
+node_modules/
+
+.env
+
+dist
+
+logs/*
+
+output/
+input/
+
+# VSC related
+.history
+.vscode

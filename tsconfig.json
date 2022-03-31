@@ -1,0 +1,27 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Node 17",
+    
+    "compilerOptions": {
+      "baseUrl": "",
+
+      "outDir": "dist",
+      "rootDir": "src",
+
+      "lib": ["es2018", "dom"],
+      "target": "es2018",
+      "module": "CommonJS",
+      "moduleResolution": "node",
+
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "types": [],
+      "noImplicitAny": false
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+  }

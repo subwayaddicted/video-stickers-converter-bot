@@ -24,6 +24,12 @@ const logger: winston.Logger = winston.createLogger({
     ],
   });
 
+const downloadFolder = 'input';
+checkAndCreateFolder(path.resolve(rootFolder, downloadFolder));
+
+const webmFolder: string = 'output';
+checkAndCreateFolder(path.resolve(rootFolder, webmFolder));
+
 const ffmpeg: FFmpeg = createFFmpeg({ log: true });
 let isFfmpegBusy: boolean = false;
 
@@ -76,9 +82,6 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
       return await ctx.scene.leave();
     }
 
-    const downloadFolder = 'input';
-    checkAndCreateFolder(downloadFolder);
-
     const fileUrl = await ctx.telegram.getFileLink(video.file_id);
     const inputFilePath = path.resolve(rootFolder, downloadFolder, video.file_name);
 
@@ -92,9 +95,6 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
 
     fileDownloadResponse.data.on('end', async () => {
       await ctx.reply('Successfuly downloaded! Please wait for file to process!');
-
-      const webmFolder: string = 'output';
-      checkAndCreateFolder(webmFolder);
 
       const outputFile: string = `${crypto.randomBytes(5).toString('hex')}_${video.file_name}.webm`;
       const outputFilePath: string = path.resolve(rootFolder, webmFolder, outputFile);

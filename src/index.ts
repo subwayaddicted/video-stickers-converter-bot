@@ -4,7 +4,6 @@ import { Telegraf, Scenes, session, Telegram } from 'telegraf';
 import * as fs from "fs";
 import * as path from "path";
 import axios from "axios";
-import { exec } from "child_process";
 import crypto from 'crypto';
 import { createFFmpeg, fetchFile, FFmpeg } from "@ffmpeg/ffmpeg";
 
@@ -25,8 +24,8 @@ const logger: winston.Logger = winston.createLogger({
     ],
   });
 
-const ffmpeg = createFFmpeg({ log: true });
-loadFfmpeg(ffmpeg);
+const ffmpeg: FFmpeg = createFFmpeg({ log: true });
+let isFfmpegBusy: boolean = false;
 
 const telegramBotToken: string | undefined = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -39,14 +38,28 @@ if (telegramBotToken == undefined) {
 const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
   'upload-wizard',
   async (ctx) => {
+    if (isFfmpegBusy) {
+      await ctx.reply('Sorry the bot is busy converting another video now, please try again in 1-2 minutes!');
+      return await ctx.scene.leave();
+    }
+
     await ctx.reply('Please upload your file.');
     return ctx.wizard.next();
   },
   async (ctx) => {
+    if (isFfmpegBusy) {
+      await ctx.reply('Sorry the bot is busy converting another video now, please try again in 1-2 minutes!');
+      return await ctx.scene.leave();
+    }
+
     await ctx.reply('Downloading, please wait.');
 
+    if (!ffmpeg.isLoaded()) {
+      await loadFfmpeg(ffmpeg);
+    }
+
     const sender = ctx.message.from;
-    const senderFullInfo = `id(${sender.id}) ${sender.first_name} ${sender.last_name} (${sender.username}) `;
+    const senderFullInfo: string = `id(${sender.id}) ${sender.first_name} ${sender.last_name} (${sender.username}) `;
 
     const video = ctx.message.video;
     video.file_name = crypto.randomBytes(10).toString('hex') + '.mp4';
@@ -80,11 +93,11 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
     fileDownloadResponse.data.on('end', async () => {
       await ctx.reply('Successfuly downloaded! Please wait for file to process!');
 
-      const webmFolder = 'output';
+      const webmFolder: string = 'output';
       checkAndCreateFolder(webmFolder);
 
-      const outputFile = `${crypto.randomBytes(5).toString('hex')}_${video.file_name}.webm`;
-      const outputFilePath = path.resolve(rootFolder, webmFolder, outputFile);
+      const outputFile: string = `${crypto.randomBytes(5).toString('hex')}_${video.file_name}.webm`;
+      const outputFilePath: string = path.resolve(rootFolder, webmFolder, outputFile);
 
       logger.debug(`${senderFullInfo} file ${video.file_name} ffmpeg start`);
       ffmpeg.setLogger(async ({ type, message }) => {
@@ -98,6 +111,7 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
           return await ctx.scene.leave();
         }
       });
+      isFfmpegBusy = true;
       ffmpeg.FS('writeFile', video.file_name, await fetchFile(inputFilePath));
       await ffmpeg.run(
         '-i', video.file_name,
@@ -111,6 +125,7 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
       );
       await fs.promises.writeFile(outputFilePath, ffmpeg.FS('readFile', outputFile));
       logger.debug(`${senderFullInfo} file ${video.file_name} ffmpeg end`);
+      isFfmpegBusy = false;
 
       await ctx.reply('Video was successfuly processed and sent!');
 

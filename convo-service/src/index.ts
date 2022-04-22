@@ -55,8 +55,7 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
       video: video,
       sender: sender
     };
-    console.log('Before amqp');
-    const connection = await amqp.connect('amqp://rabbitmq:5673');
+    const connection = await amqp.connect(process.env.AMQP_URL ??= "" );
     const channel = await connection.createChannel();
     await channel.assertQueue(queueName);
     await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(msg)));

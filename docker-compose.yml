@@ -8,6 +8,7 @@ services:
       - ./convo-service/src:/usr/app/src
     depends_on:
       - rabbitmq
+    restart: on-failure
     networks:
       - bot
   converter:

@@ -55,18 +55,18 @@ async function testrabbit() {
     localFileManager.deleteFile(localPathGenerator.getInputFilePath());
     localFileManager.deleteFile(localPathGenerator.getOutputFilePath());
 
-    await bot.telegram.sendMessage(process.env.OWNER_CHAT_ID != undefined ? process.env.OWNER_CHAT_ID : '', queueMessage.sender.first_name);
+    // await bot.telegram.sendMessage(process.env.OWNER_CHAT_ID != undefined ? process.env.OWNER_CHAT_ID : '', queueMessage.sender.first_name);
     // await bot.telegram.forwardMessage(
     //   process.env.OWNER_CHAT_ID,
     //   ctx.message.chat.id,
     //   ctx.message.message_id
     // );
-    await bot.telegram.sendDocument(
-      process.env.OWNER_CHAT_ID != undefined ? process.env.OWNER_CHAT_ID : '',
-      {
-        source: localPathGenerator.getOutputFilePath()
-      }
-    );
+    // await bot.telegram.sendDocument(
+    //   process.env.OWNER_CHAT_ID != undefined ? process.env.OWNER_CHAT_ID : '',
+    //   {
+    //     source: localPathGenerator.getOutputFilePath()
+    //   }
+    // );
   });
 }
 

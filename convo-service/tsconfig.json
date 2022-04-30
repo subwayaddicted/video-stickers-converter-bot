@@ -8,9 +8,8 @@
       "outDir": "dist",
       "rootDir": "src",
 
-      "lib": ["es2018", "dom"],
-      "target": "es2018",
-      "module": "CommonJS",
+      "target": "es2020",
+      "module": "es2020",
       "moduleResolution": "node",
 
       "strict": true,

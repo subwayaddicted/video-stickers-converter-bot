@@ -17,5 +17,6 @@ RUN apk add dumb-init
 ENV NODE_ENV production
 WORKDIR /usr/app
 COPY --from=ts-remover /usr/app /usr/app/
+RUN chown -Rh 1000:1000 /usr/app
 USER 1000
 CMD ["dumb-init", "npm", "start"]

@@ -58,8 +58,8 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
       video: video,
       sender: sender
     };
-
     const connection = await amqp.connect(process.env.AMQP_URL ??= "");
+
     const channel = await connection.createChannel();
     const assertQueue = await channel.assertQueue(queueName);
 

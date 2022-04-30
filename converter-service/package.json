@@ -1,12 +1,12 @@
 {
-  "name": "video-sticker-converter-bot",
+  "name": "video-sticker-converter-bot-converter-service",
   "version": "1.0.0",
   "description": "Video sticker converter bot for telegram",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node --es-module-specifier-resolution=node dist/index.js",
     "start:dev": "nodemon"
   },
   "author": "",
@@ -19,8 +19,11 @@
   "dependencies": {
     "@ffmpeg/core": "^0.10.0",
     "@ffmpeg/ffmpeg": "^0.10.1",
+    "@types/amqplib": "^0.8.2",
+    "amqplib": "^0.8.0",
     "axios": "^0.26.1",
     "dotenv": "^16.0.0",
+    "pkg-dir": "^6.0.1",
     "telegraf": "^4.7.0",
     "winston": "^3.6.0"
   }

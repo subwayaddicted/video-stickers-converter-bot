@@ -1,7 +1,40 @@
 version: '3.8'
 services:
-  web:
+  convo:
     build:
-      context: ./
+      context: ./convo-service
     volumes:
       - /usr/app/node_modules
+      - ./convo-service/src:/usr/app/src
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    networks:
+      - bot
+  converter:
+    build:
+      context: ./converter-service
+    volumes:
+      - /usr/app/node_modules
+      - ./converter-service/src:/usr/app/src
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    networks:
+      - bot
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5673:5672
+        - 15673:15672
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+    networks:
+        - bot 
+networks:
+  bot:
+    driver: bridge

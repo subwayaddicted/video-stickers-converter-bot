@@ -3,6 +3,7 @@ import * as winston from "winston";
 import { Telegraf, Scenes, session } from 'telegraf';
 import * as fs from "fs";
 import * as amqp from "amqplib";
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -50,21 +51,53 @@ const uploadWizardScene: Scenes.WizardScene<any> = new Scenes.WizardScene(
       return await ctx.scene.leave();
     }
 
+    logger.info(`${senderFullInfo} requested conversion of `);
+
     const queueName = 'converter';
     const msg: Object = {
       video: video,
       sender: sender
     };
-    console.log('Before amqp');
-    const connection = await amqp.connect('amqp://rabbitmq:5673');
+
+    const connection = await amqp.connect(process.env.AMQP_URL ??= "");
     const channel = await connection.createChannel();
-    await channel.assertQueue(queueName);
-    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(msg)));
-    await channel.close();
-    await connection.close();
+    const assertQueue = await channel.assertQueue(queueName);
+
+    const correlationId = crypto.randomBytes(10).toString('hex');
+
+    channel.consume(assertQueue.queue, async message => {
+      if (message?.properties.correlationId != correlationId) {
+        ctx.reply('Sorry something gone wrong!');
+        await channel.close();
+        await connection.close();
+        return await ctx.scene.leave();
+      }
+      
+      const status = JSON.parse(message.content.toString()).status;
+      if (!status) {
+        ctx.reply('Sorry something gone wrong!');
+        await channel.close();
+        await connection.close();
+        return await ctx.scene.leave();
+      }
+
+      ctx.reply('Thanks, video was converted and submitted successfully!');
+      await channel.close();
+      await connection.close();
+      return await ctx.scene.leave();
+    }, {
+      noAck: true
+    })
+
+    await channel.sendToQueue(
+      queueName, 
+      Buffer.from(JSON.stringify(msg)), 
+      {
+        correlationId: correlationId,
+        replyTo: assertQueue.queue
+      });
 
     await ctx.reply('Thanks for submitting, the bot will update you on the status as soon as possible');
-    return await ctx.scene.leave();
   }
 );
 

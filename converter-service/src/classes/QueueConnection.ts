@@ -20,8 +20,16 @@ export class QueueConnection implements RabbitQueueConnection {
         const connection = await amqp.connect(amqpUrl);
         const channel = await connection.createChannel();
         await channel.assertQueue(this.queueName);
+        await channel.prefetch(1);
 
         return channel;
     }
 
+    async reply(channel: any, message: any, status: boolean): Promise<void> {
+        await channel.sendToQueue(message.properties.replyTo,
+            Buffer.from(JSON.stringify({ status: status })),
+            {
+                correlationId: message.properties.correlationId
+            });
+    }
 }

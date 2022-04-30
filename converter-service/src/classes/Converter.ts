@@ -17,7 +17,7 @@ export class Converter implements IConverter {
             await this.ffmpeg.load();
         }
 
-        this.ffmpeg.setLogger(async ({ type, message }) => {
+        // this.ffmpeg.setLogger(async ({ type, message }) => {
             // if (type == 'info') {
             //     logger.debug(message);
             // }
@@ -27,7 +27,7 @@ export class Converter implements IConverter {
             //     await ctx.reply('Some error occured on processing, sorry for that!');
             //     return await ctx.scene.leave();
             // }
-        });
+        // });
 
         this.ffmpeg.FS('writeFile', this.pathGenerator.inputFileName, await fetchFile(this.pathGenerator.getInputFilePath()));
         await this.ffmpeg.run(
